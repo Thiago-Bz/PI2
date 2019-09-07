@@ -1,0 +1,77 @@
+#include <msp430g2452.h>
+
+int miliseconds;
+int distance;
+long sensor;
+//trigger p1.1 e Echo p1.2-- led da placa p1.0
+//testando trigger p1.6 e echo p1.7
+void main(void)
+{
+  BCSCTL1 = CALBC1_1MHZ;
+  DCOCTL = CALDCO_1MHZ;                     // submainclock 1mhz
+  WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
+
+  CCTL0 = CCIE;                             // CCR0 interrupt enabled
+  CCR0 = 1000;                  // 1ms at 1mhz
+  TACTL = TASSEL_2 + MC_1;                  // SMCLK, upmode
+
+  P1IFG  = 0x00;                //limpa as flags de interrupcoes
+  P1DIR |= BIT0;                            // P1.0 como saida para os LED
+  P1OUT &= ~BIT0;                           // desliga leds
+
+  _BIS_SR(GIE);                         // global interrupt enable
+
+ while(1){
+//    P1IE &= ~0x01;          // disable interupt
+//    P1DIR |= 0x02;          // trigger pin as output
+//    P1OUT |= 0x02;          // generate pulse
+    P1IE &= ~BIT0;          // disabilita interrupcao
+    P1DIR |= BIT6;          // trigger pin como saida --era BIT1
+    P1OUT |= BIT6;          // generate pulse --era BIT1
+    __delay_cycles(10);             // for 10us
+
+    P1OUT &= ~BIT6;                 // stop pulse --era BIT1
+    P1DIR &= ~BIT7;         // make pin P1.2 entrada (ECHO) --era BIT2
+        P1IFG = 0x00;                   // clear flag just in case anything happened before
+
+    P1IE |= BIT7;           // enable interupt on ECHO pin--era BIT2
+    P1IES &= ~BIT7;         // rising edge on ECHO pin --era BIT2
+        __delay_cycles(30000);          // delay for 30ms (after this time echo times out if there is no object detected)
+        distance = sensor/58;           // converting ECHO lenght into cm
+        if(distance < 20 && distance != 0) P1OUT |= BIT0;  //turning LED on if distance is less than 20cm and if distance isn't 0.
+        else P1OUT &= ~BIT0;
+
+
+
+
+ }
+}
+
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+    if(P1IFG&BIT7)  //is there interrupt pending?--era BIT2
+        {
+          if(!(P1IES&BIT7)) // is this the rising edge?--era BIT2
+          {
+            TACTL|=TACLR;   // clears timer A
+            miliseconds = 0;
+            P1IES |= BIT7;  //falling edge --era BIT2
+          }
+          else
+          {
+            sensor = (long)miliseconds*1000 + (long)TAR;    //calculating ECHO lenght
+
+          }
+    P1IFG &= ~BIT7;             //limpa a flag--era BIT2
+    }
+}
+
+#pragma vector=TIMER0_A0_VECTOR
+__interrupt void Timer_A (void)
+{
+  miliseconds++;
+}
+
+
+
