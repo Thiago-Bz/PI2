@@ -1,0 +1,71 @@
+#include <msp430.h> 
+#include <msp430g2553.h>
+
+#define LDR BIT0
+#define GAS BIT1
+#define BUZZER BIT2
+#define LED BIT3
+
+void Init_AD(void);
+unsigned int valor[2];
+
+void main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD; //Desliga Wtch_dg_timer
+
+    BCSCTL1 = CALBC1_1MHZ;
+    DCOCTL = CALDCO_1MHZ;
+
+    P1OUT &= ~(BUZZER + LED);
+    P1DIR |= BUZZER + LED;
+
+    Init_AD();
+
+    for (;;)
+    {
+        TACCR0 = 31250-1;
+        TACCTL1 = OUTMOD_7;
+        TACTL = TASSEL_2 | ID_3 | MC_1;
+        while ((TACTL & TAIFG)==0){
+        }
+        TACTL &= ~TAIFG; //ATRASO DE 0,5s
+
+        ADC10CTL0 &= ~ENC;
+        while (ADC10CTL1 & BUSY);
+        ADC10SA = valor;
+        ADC10CTL0 |= ENC + ADC10SC; //inicia a conversão AD
+
+    __bis_SR_register(CPUOFF + GIE);
+        if (valor[0]>119){
+            P1OUT |= BUZZER;
+        }
+        else{
+            P1OUT &= ~BUZZER;
+        }
+        if(valor[1]<555){
+            P1OUT |= LED;
+        }
+        else{
+            P1OUT &= ~LED;
+        }
+    }
+}
+
+#pragma vector=ADC10_VECTOR
+__interrupt void ADC10_ISR(void)
+{
+__bic_SR_register_on_exit(CPUOFF);
+}
+
+void Init_AD(void){
+    WDTCTL = WDTPW + WDTHOLD;
+    ADC10CTL1 = INCH_1 + CONSEQ_1;
+    ADC10CTL0 = ADC10SHT_2 + MSC + ADC10ON + ADC10IE;
+    ADC10AE0 = LDR + GAS;
+    ADC10DTC1 = 0x2;
+    P1OUT &= ~(BUZZER + LED);
+    P1DIR |= BUZZER + LED;
+}
+
+
+
