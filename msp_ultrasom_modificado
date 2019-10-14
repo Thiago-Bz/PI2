@@ -8,11 +8,11 @@ long sensor;
 void main(void)
 {
   BCSCTL1 = CALBC1_1MHZ;
-  DCOCTL = CALDCO_1MHZ;                     // submainclock 1mhz
-  WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
+  DCOCTL = CALDCO_1MHZ;                     // clock 1mhz
+  WDTCTL = WDTPW + WDTHOLD;                 // desliga o WDT
 
-  CCTL0 = CCIE;                             // CCR0 interrupt enabled
-  CCR0 = 1000;                  // 1ms at 1mhz
+  CCTL0 = CCIE;                             // CCR0 desabilita a interrupçao
+  CCR0 = 1000;                  // 1ms - 1mhz
   TACTL = TASSEL_2 + MC_1;                  // SMCLK, upmode
 
   P1IFG  = 0x00;                //limpa as flags de interrupcoes
@@ -22,23 +22,23 @@ void main(void)
   _BIS_SR(GIE);                         // global interrupt enable
 
  while(1){
-//    P1IE &= ~0x01;          // disable interupt
-//    P1DIR |= 0x02;          // trigger pin as output
+//    P1IE &= ~0x01;          // disablita interrupcao
+//    P1DIR |= 0x02;          // trigger como output
 //    P1OUT |= 0x02;          // generate pulse
     P1IE &= ~BIT0;          // disabilita interrupcao
-    P1DIR |= BIT6;          // trigger pin como saida --era BIT1
-    P1OUT |= BIT6;          // generate pulse --era BIT1
-    __delay_cycles(10);             // for 10us
+    P1DIR |= BIT6;          // trigger pin como saida 
+    P1OUT |= BIT6;          // generate pulse 
+    __delay_cycles(10);             // dalay de 10us
 
-    P1OUT &= ~BIT6;                 // stop pulse --era BIT1
-    P1DIR &= ~BIT7;         // make pin P1.2 entrada (ECHO) --era BIT2
-        P1IFG = 0x00;                   // clear flag just in case anything happened before
+    P1OUT &= ~BIT6;                 // stop pulse 
+    P1DIR &= ~BIT7;         // make pin P1.2 entrada (ECHO) 
+        P1IFG = 0x00;                   // limpa flag de interrupcao 
 
-    P1IE |= BIT7;           // enable interupt on ECHO pin--era BIT2
-    P1IES &= ~BIT7;         // rising edge on ECHO pin --era BIT2
-        __delay_cycles(30000);          // delay for 30ms (after this time echo times out if there is no object detected)
-        distance = sensor/58;           // converting ECHO lenght into cm
-        if(distance < 20 && distance != 0) P1OUT |= BIT0;  //turning LED on if distance is less than 20cm and if distance isn't 0.
+    P1IE |= BIT7;           // habilita interupt no pino ECHO
+    P1IES &= ~BIT7;         // rising edge on ECHO pin 
+        __delay_cycles(30000);          // delay de 30ms (tempo para a onda voltar no echo)
+        distance = sensor/58;           // converter para cm (ECHO) 
+        if(distance < 20 && distance != 0) P1OUT |= BIT0;  //aciona o led dependendo da distancia, no caso 20cm .
         else P1OUT &= ~BIT0;
 
 
@@ -50,20 +50,20 @@ void main(void)
 #pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
 {
-    if(P1IFG&BIT7)  //is there interrupt pending?--era BIT2
+    if(P1IFG&BIT7)  //se houver interrupcap
         {
-          if(!(P1IES&BIT7)) // is this the rising edge?--era BIT2
+          if(!(P1IES&BIT7)) // rising edge?
           {
-            TACTL|=TACLR;   // clears timer A
+            TACTL|=TACLR;   // limpa o timer A
             miliseconds = 0;
-            P1IES |= BIT7;  //falling edge --era BIT2
+            P1IES |= BIT7;  //borda de descida
           }
           else
           {
-            sensor = (long)miliseconds*1000 + (long)TAR;    //calculating ECHO lenght
+            sensor = (long)miliseconds*1000 + (long)TAR;    //calcula distancia ECHO
 
           }
-    P1IFG &= ~BIT7;             //limpa a flag--era BIT2
+    P1IFG &= ~BIT7;             //limpa a flag
     }
 }
 
