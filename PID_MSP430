@@ -1,0 +1,46 @@
+#include <msp430g2553.h>
+
+
+int tim, angle;
+
+#pragma vector=PORT1_VECTOR
+__interrupt void p1int() 
+{ 
+  for(int i=0; i<tim;i++){
+    delay(2); 
+//    _delay_cycles(20000);
+}
+P1OUT |= BIT6;
+P1OUT |= BIT0;
+delay(1);
+//_delay_cycles(20000);
+
+P1OUT &=~BIT6;
+P1OUT &=~BIT0;
+  
+P1IFG &= ~BIT3; // limpa flag de interrupcao do pino P1.3 
+}
+int main() 
+{
+WDTCTL = WDTPW + WDTHOLD; // desativa watchdog 
+//DCOCTL = 0;
+//BCSCTL1 = CALBC1_16MHZ;
+//DCOCTL = CALDCO_16MHZ;
+P1DIR |= BIT6; // define P1.0 e P1.6 como saida
+P1DIR |= BIT0; 
+P1OUT &=~BIT6;
+P1OUT &=~BIT0;
+P1REN |=BIT3; // habilita R pull-up/pull-down em P1.3 
+P1OUT &=~BIT3; // define como pull-up 
+P1IE |= BIT3; // habilita interrupcao do pino P1.3 
+P1IFG &= ~BIT3; // limpa flag de interrupcao do pino 
+__enable_interrupt(); // habilita as interrupcoes mascaraveis (seta GIE)
+while(1)
+{
+   angle = 10;
+  
+  tim = (angle*8.333)/180;
+  
+  }
+
+}
