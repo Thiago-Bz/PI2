@@ -1,0 +1,53 @@
+#include  "msp430g2553.h"
+
+long temp;
+long temperatura;
+
+void main(void)
+{
+  WDTCTL = WDTPW + WDTHOLD;
+  ADC10CTL1 = INCH_0 + ADC10DIV_3; //PINO P1.0 A0
+  ADC10CTL0 = SREF_1 + ADC10SHT_3 + REFON + ADC10ON + ADC10IE;
+
+  P1DIR |= BIT6; // P1.6 como saida
+  P1OUT &=~BIT6;
+
+
+  __enable_interrupt();                     // Enable interrupts.
+  TACCR0 = 30;                              // Delay to allow Ref to settle
+  TACCTL0 |= CCIE;                          // Compare-mode interrupt.
+  TACTL = TASSEL_2 | MC_1;                  // TACLK = SMCLK, Up mode.
+  LPM0;                                     // Wait for delay.
+  TACCTL0 &= ~CCIE;                         // Disable timer Interrupt
+  __disable_interrupt();
+
+  while(1)
+  {
+    ADC10CTL0 |= ENC + ADC10SC;             // Sampling and conversion start
+    __bis_SR_register(CPUOFF + GIE);        // LPM0 with interrupts enabled
+    temp = ADC10MEM;
+    temperatura = temp/6.82;
+    if(temperatura > 25){
+        P1OUT|= BIT6;
+    }else
+        P1OUT&=~BIT6;
+
+    __no_operation();                       // SET BREAKPOINT HERE
+  }
+}
+
+// ADC10 interrupt service routine
+#pragma vector=ADC10_VECTOR
+__interrupt void ADC10_ISR (void)
+{
+  __bic_SR_register_on_exit(CPUOFF);        // Clear CPUOFF bit from 0(SR)
+}
+
+#pragma vector=TIMER0_A0_VECTOR
+__interrupt void ta0_isr(void)
+{
+  TACTL = 0;
+  LPM0_EXIT;                                // Exit LPM0 on return
+}
+
+
