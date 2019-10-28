@@ -1,0 +1,33 @@
+int time,o = 0;
+ int angle = 0;
+void setup()
+{
+  
+  pinMode(2,INPUT);
+  pinMode(13,OUTPUT);
+  
+  digitalWrite(13,LOW);
+  
+  attachInterrupt(0,acende,RISING);
+}
+
+void loop()
+{
+  for (o=1;o<179;o++){
+  delay(80);
+  angle = o;
+  time= (angle*8.33)/180;
+  }
+  o=0;
+  
+}
+
+void acende()
+{
+    for(int i=0; i<time;i++){
+    delay(2);
+}
+digitalWrite(13, HIGH);
+delay(1);
+digitalWrite(13,LOW);
+}
