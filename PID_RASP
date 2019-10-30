@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int i,  angle, o;
+
+
+float kp=2.0,
+      ki=0.001,
+      kd=1000;
+
+float P=0.0,
+      I=0.0,
+      D=0.0;
+
+double PID=0.0;
+float temperatura;
+float lastemp;
+double lastprocess=0.0;
+int temp_ref=24;
+//int angle[1, 45, 90, 180];
+double erro=0.0;
+double lasterro=0;
+
+
+int main()
+{
+scanf("%f", &temperatura);
+
+if(temperatura<=24){
+// Implementação PID
+erro = temp_ref - temperatura;
+printf("erro: %lf\n", erro);
+//float deltatime = (getMillis() - lastprocess)/1000.0;
+//lastprocess = getMillis();
+
+P = erro*kp;
+printf("P: %f\n", P);
+
+I += (erro*ki);//*deltatime;
+printf("I: %f\n", I);
+
+D = ((erro - lasterro)*kd);//deltatime;
+printf("D: %f\n", D);
+
+lastemp = temperatura;
+printf("LAST TEMP: %f\n", lastemp);
+
+PID = P + I + D;
+printf("PID: %lf\n", PID);
+
+angle = (PID - 68); //era 85
+printf("Valor de angulo: %d\n",angle);
+}else 
+printf("Temperatura acima do setpoint\n");
+}
