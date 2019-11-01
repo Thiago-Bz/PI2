@@ -49,7 +49,14 @@ printf("LAST TEMP: %f\n", lastemp);
 PID = P + I + D;
 printf("PID: %lf\n", PID);
 
-angle = (PID - 68); //era 85
+if(PID==0){
+angle=120;
+}else if(
+
+}
+
+angle = (PID - 120);        //era 85
+//valores de angle=[0(max) 10 20 110 70 170 30 120];
 printf("Valor de angulo: %d\n",angle);
 }else 
 printf("Temperatura acima do setpoint\n");
