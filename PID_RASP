@@ -2,71 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-int i,  angle, o;
-
-
-float kp=2.0,
-      ki=0.001,
-      kd=1000;
-
-float P=0.0,
-      I=0.0,
-      D=0.0;
-
-double PID=0.0;
-float temperatura;
-float lastemp;
-double lastprocess=0.0;
-int temp_ref=24;
-//int angle[1, 45, 90, 180];
-double erro=0.0;
-double lasterro=0;
-
-
-int main()
-{
-scanf("%f", &temperatura);
-
-if(temperatura<=24){
-// Implementação PID
-erro = temp_ref - temperatura;
-printf("erro: %lf\n", erro);
-//float deltatime = (getMillis() - lastprocess)/1000.0;
-//lastprocess = getMillis();
-
-P = erro*kp;
-printf("P: %f\n", P);
-
-I += (erro*ki);//*deltatime;
-printf("I: %f\n", I);
-
-D = ((erro - lasterro)*kd);//deltatime;
-printf("D: %f\n", D);
-
-lastemp = temperatura;
-printf("LAST TEMP: %f\n", lastemp);
-
-PID = P + I + D;
-printf("PID: %lf\n", PID);
-
-if(PID==0){
-angle=120;
-}else if(
-
-}
-
-angle = (PID - 120);        //era 85
-//valores de angle=[0(max) 10 20 110 70 170 30 120];
-printf("Valor de angulo: %d\n",angle);
-}else 
-printf("Temperatura acima do setpoint\n");
-}
-----------------------------------------
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 int i,  pot, o;
 int angle[8] = {0,10,20,110,70,170,30,120};
@@ -114,36 +49,32 @@ if(temperatura<=24){
 	temperatura = 0;
 	PID = P + I + D;
 	printf("PID: %lf\n", PID);
-
-	if(0.0<PID<1.0){
+	
+	if(PID<1){
 		pot = angle[7];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(1.0<PID<3460.0){
+	}else if(PID<3460){
 		pot = angle[6];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(3460.0<PID<6900.0){
+	}else if(PID<6900){
 		pot = angle[5];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(6900.0<PID<10350.0){
+	}else if(PID<10350){
 		pot = angle[4];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(10350.0<PID<13800.0){
+	}else if(PID<13800){
 		pot = angle[3];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(13800.0<PID<17250.0){
+	}else if(PID<17250){
 		pot = angle[2];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(17250.0<PID<20700.0){
+	}else if(PID<20700){
 		pot = angle[1];
 		printf("Valor de angulo (potência): %d\n",pot);
-	}else if(20700.0 < PID < 24100.0){
+	}else if(PID<24100){
 		pot = angle[0];
 		printf("Valor de angulo (potência): %d\n",pot);
 	}
-		//angle = (PID - 120);        //era 85
-	//valores de angle=[0(max) 10 20 110 70 170 30 120];
-
-		//printf("Valor de angulo: %d\n",angle);
 }else 
 	printf("Temperatura acima do setpoint\n");
 }
